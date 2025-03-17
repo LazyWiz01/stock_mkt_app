@@ -1,7 +1,6 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
+// Removed unused imports
 import { useState, useRef } from "react";
 import { Line } from "react-chartjs-2";
 import {
@@ -33,7 +32,103 @@ export default function Home() {
   const [investorType, setInvestorType] = useState('moderate');
   const [stockSymbol, setStockSymbol] = useState('AAPL');
   const [isLoading, setIsLoading] = useState(false);
-  const [predictionResult, setPredictionResult] = useState(null);
+  // Define the type for prediction result
+  interface PredictionResult {
+    currentPrice: number;
+    oneMinuteProjection: {
+      price: number;
+      change: number;
+      changePercent: number;
+    };
+    fiveMinuteProjection: {
+      price: number;
+      change: number;
+      changePercent: number;
+    };
+  }
+  
+  const [predictionResult, setPredictionResult] = useState<PredictionResult | null>(null);
+  
+  // Chart options for dashboard charts
+  const dashboardChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        mode: 'index',
+        intersect: false,
+      },
+    },
+    scales: {
+      y: {
+        ticks: {
+          callback: function(value) {
+            return value.toLocaleString();
+          },
+          color: '#94a3b8'
+        },
+        grid: { color: 'rgba(30, 64, 175, 0.1)' }
+      },
+      x: {
+        ticks: { color: '#94a3b8' },
+        grid: { color: 'rgba(30, 64, 175, 0.1)' }
+      }
+    },
+    elements: {
+      line: {
+        tension: 0.4
+      }
+    }
+  };
+
+  // Market data for charts already defined above
+  // Using the existing marketData state
+  const marketData = {
+    sp500: {
+      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+      values: [4500, 4550, 4600, 4580, 4620, 4700, 4750, 4800, 4780, 4850, 4900, 4950],
+      change: 1.2
+    },
+    nasdaq: {
+      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+      values: [14000, 14200, 14400, 14300, 14500, 14700, 14800, 15000, 14900, 15200, 15400, 15500],
+      change: 0.8
+    },
+    dowJones: {
+      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+      values: [35000, 35200, 35400, 35300, 35100, 35000, 34900, 34800, 34700, 34600, 34500, 34400],
+      change: -0.3
+    }
+  };
+  
+  // Function to create chart data for dashboard
+  function createChartData(labels: string[], values: number[], color: string) {
+    return {
+      labels,
+      datasets: [
+        {
+          label: 'Price',
+          data: values,
+          borderColor: color,
+          backgroundColor: `${color}33`, // Add transparency
+          fill: true,
+          pointRadius: 2,
+          pointBackgroundColor: color,
+        },
+      ],
+    };
+  };
+  
+  // Mock data for market indices
+  const indexData = [
+    { symbol: 'S&P 500', currentPrice: 4486.49, change: 19.70, changePercent: 0.44 },
+    { symbol: 'NASDAQ', currentPrice: 13917.89, change: 128.41, changePercent: 0.93 },
+    { symbol: 'DOW', currentPrice: 34991.21, change: -45.66, changePercent: -0.13 },
+    { symbol: 'RUSSELL 2000', currentPrice: 1875.31, change: 4.53, changePercent: 0.24 },
+  ];
   
   // Add refs for each section to enable smooth scrolling
   const homeRef = useRef(null);
@@ -42,8 +137,8 @@ export default function Home() {
   const analysisRef = useRef(null);
   
   // Function to scroll to a section
-  const scrollToSection = (ref) => {
-    ref.current.scrollIntoView({ behavior: 'smooth' });
+  const scrollToSection = (ref: React.RefObject<HTMLElement>) => {
+    ref.current?.scrollIntoView({ behavior: 'smooth' });
   };
   
   // Add missing variable definitions
@@ -154,26 +249,13 @@ export default function Home() {
     { id: 5, symbol: 'NVDA', name: 'NVIDIA Corp.', price: 411.17, change: 7.62, changePercent: 1.89 },
   ];
   
-  // Market data for charts
-  const [marketData, setMarketData] = useState({
-    sp500: {
-      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-      values: [4500, 4550, 4600, 4580, 4620, 4700, 4750, 4800, 4780, 4850, 4900, 4950],
-      change: 1.2
-    },
-    nasdaq: {
-      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-      values: [14000, 14200, 14400, 14300, 14500, 14700, 14800, 15000, 14900, 15200, 15400, 15500],
-      change: 0.8
-    },
-    dowJones: {
-      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-      values: [35000, 35200, 35400, 35300, 35100, 35000, 34900, 34800, 34700, 34600, 34500, 34400],
-      change: -0.3
-    }
-});
+  // Market data for charts already defined above
+  // Using the existing marketData state
+
   
   // Mock analysis data
+  // Commented out unused variable
+  /*
   const mockAnalysisData = {
     AAPL: {
       price: 182.63,
@@ -213,7 +295,7 @@ export default function Home() {
   };
   
   // Function to handle investor type tab change
-  const handleTabChange = (type) => {
+  const handleTabChange = (type: string) => {
     setInvestorType(type);
   };
   
@@ -252,38 +334,50 @@ export default function Home() {
     }
   };
   
-  // Function to create chart data for dashboard
-  const createChartData = (labels, values, color) => {
-    return {
-      labels,
-      datasets: [
-        {
-          label: 'Price',
-          data: values,
-          borderColor: color,
-          backgroundColor: `${color}33`, // Add transparency
-          fill: true,
-          pointRadius: 2,
-          pointBackgroundColor: color,
+
+  
+  // Chart options for dashboard charts
+  const dashboardChartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+      },
+      tooltip: {
+        mode: 'index',
+        intersect: false,
+      },
+    },
+    scales: {
+      y: {
+        ticks: {
+          callback: function(value) {
+            return value.toLocaleString();
+          },
+          color: '#94a3b8'
         },
-      ],
-    };
+        grid: { color: 'rgba(30, 64, 175, 0.1)' }
+      },
+      x: {
+        ticks: { color: '#94a3b8' },
+        grid: { color: 'rgba(30, 64, 175, 0.1)' }
+      }
+    },
+    elements: {
+      line: {
+        tension: 0.4
+      }
+    }
   };
 
-  // Mock data for market indices
-  const indexData = [
-    { symbol: 'S&P 500', currentPrice: 4486.49, change: 19.70, changePercent: 0.44 },
-    { symbol: 'NASDAQ', currentPrice: 13917.89, change: 128.41, changePercent: 0.93 },
-    { symbol: 'DOW', currentPrice: 34991.21, change: -45.66, changePercent: -0.13 },
-    { symbol: 'RUSSELL 2000', currentPrice: 1875.31, change: 4.53, changePercent: 0.24 },
-  ];
-
   // Mock data for news
-  const newsItems = [
+  // Commented out unused variable
+  /* const newsItems = [
     { id: 1, title: 'Fed signals potential rate cuts in upcoming meeting', source: 'Financial Times', date: '2 hours ago' },
     { id: 2, title: 'Tech stocks rally as inflation concerns ease', source: 'Wall Street Journal', date: '4 hours ago' },
     { id: 3, title: 'Retail sales exceed expectations in Q3', source: 'Bloomberg', date: '6 hours ago' },
-  ];
+  ]; */
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -334,7 +428,7 @@ export default function Home() {
       <div className="bg-black py-2 border-b border-blue-800/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex space-x-6 overflow-x-auto scrollbar-hide">
-            {indexData.map((index, i) => (
+            {(indexData || []).map((index, i) => (
               <div key={i} className="flex items-center space-x-2 whitespace-nowrap">
                 <span className="text-gray-300 text-xs">{index.symbol}</span>
                 <span className="text-white text-xs font-medium">{index.currentPrice.toFixed(2)}</span>
@@ -484,12 +578,35 @@ export default function Home() {
                       <div className="h-48">
                         <Line 
                           options={{
-                            ...dashboardChartOptions,
+                            responsive: true,
+                            maintainAspectRatio: false,
                             plugins: {
-                              ...dashboardChartOptions.plugins,
+                              legend: {
+                                display: false,
+                              },
                               tooltip: {
                                 mode: 'index',
                                 intersect: false,
+                              }
+                            },
+                            scales: {
+                              y: {
+                                ticks: {
+                                  callback: function(value) {
+                                    return value.toLocaleString();
+                                  },
+                                  color: '#94a3b8'
+                                },
+                                grid: { color: 'rgba(30, 64, 175, 0.1)' }
+                              },
+                              x: {
+                                ticks: { color: '#94a3b8' },
+                                grid: { color: 'rgba(30, 64, 175, 0.1)' }
+                              }
+                            },
+                            elements: {
+                              line: {
+                                tension: 0.4
                               }
                             }
                           }}
@@ -507,12 +624,35 @@ export default function Home() {
                       <div className="h-48">
                         <Line 
                           options={{
-                            ...dashboardChartOptions,
+                            responsive: true,
+                            maintainAspectRatio: false,
                             plugins: {
-                              ...dashboardChartOptions.plugins,
+                              legend: {
+                                display: false,
+                              },
                               tooltip: {
                                 mode: 'index',
                                 intersect: false,
+                              }
+                            },
+                            scales: {
+                              y: {
+                                ticks: {
+                                  callback: function(value) {
+                                    return value.toLocaleString();
+                                  },
+                                  color: '#94a3b8'
+                                },
+                                grid: { color: 'rgba(30, 64, 175, 0.1)' }
+                              },
+                              x: {
+                                ticks: { color: '#94a3b8' },
+                                grid: { color: 'rgba(30, 64, 175, 0.1)' }
+                              }
+                            },
+                            elements: {
+                              line: {
+                                tension: 0.4
                               }
                             }
                           }}
@@ -530,12 +670,35 @@ export default function Home() {
                       <div className="h-48">
                         <Line 
                           options={{
-                            ...dashboardChartOptions,
+                            responsive: true,
+                            maintainAspectRatio: false,
                             plugins: {
-                              ...dashboardChartOptions.plugins,
+                              legend: {
+                                display: false,
+                              },
                               tooltip: {
                                 mode: 'index',
                                 intersect: false,
+                              }
+                            },
+                            scales: {
+                              y: {
+                                ticks: {
+                                  callback: function(value) {
+                                    return value.toLocaleString();
+                                  },
+                                  color: '#94a3b8'
+                                },
+                                grid: { color: 'rgba(30, 64, 175, 0.1)' }
+                              },
+                              x: {
+                                ticks: { color: '#94a3b8' },
+                                grid: { color: 'rgba(30, 64, 175, 0.1)' }
+                              }
+                            },
+                            elements: {
+                              line: {
+                                tension: 0.4
                               }
                             }
                           }}
@@ -1133,48 +1296,10 @@ export default function Home() {
                     </div>
                   </div>
                   
-                  {/* Price Target */}
-                  <div className="bg-black backdrop-blur-sm rounded-xl shadow-2xl overflow-hidden border border-blue-800/30">
-                    <div className="px-4 py-5 sm:p-6">
-                      <h2 className="text-xl font-semibold text-white">Price Target</h2>
-                      <div className="mt-4">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-blue-200">Current</span>
-                          <span className="text-sm text-blue-200">12-Month Target</span>
-                        </div>
-                        <div className="mt-2 flex justify-between items-center">
-                          <span className="text-xl font-bold text-white">$182.63</span>
-                          <div className="h-0.5 flex-1 mx-4 bg-gradient-to-r from-blue-500 to-cyan-400"></div>
-                          <span className="text-xl font-bold text-white">$210.00</span>
-                        </div>
-                        <div className="mt-4 text-sm text-green-400 font-medium">
-                          Potential Upside: 15.0%
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  {/* Additional content can be added here if needed */}
                 </div>
               </div>
-                  {/* Price Target */}
-                  <div className="bg-black backdrop-blur-sm rounded-xl shadow-2xl overflow-hidden border border-blue-800/30">
-                    <div className="px-4 py-5 sm:p-6">
-                      <h2 className="text-xl font-semibold text-white">Price Target</h2>
-                      <div className="mt-4">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-blue-200">Current</span>
-                          <span className="text-sm text-blue-200">12-Month Target</span>
-                        </div>
-                        <div className="mt-2 flex justify-between items-center">
-                          <span className="text-xl font-bold text-white">$182.63</span>
-                          <div className="h-0.5 flex-1 mx-4 bg-gradient-to-r from-blue-500 to-cyan-400"></div>
-                          <span className="text-xl font-bold text-white">$210.00</span>
-                        </div>
-                        <div className="mt-4 text-sm text-green-400 font-medium">
-                          Potential Upside: 15.0%
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  {/* Additional content can be added here if needed */}
               {/* Financial Data */}
               <div className="mt-6 bg-black backdrop-blur-sm rounded-xl shadow-2xl overflow-hidden border border-blue-800/30">
                 <div className="px-4 py-5 sm:p-6">

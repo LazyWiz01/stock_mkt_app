@@ -3,13 +3,27 @@
 import { useState, useEffect } from 'react';
 import RealTimeStockData from './RealTimeStockData';
 
+interface PredictionResult {
+  currentPrice: number;
+  oneMinuteProjection: {
+    price: number;
+    change: number;
+    changePercent: number;
+  };
+  fiveMinuteProjection: {
+    price: number;
+    change: number;
+    changePercent: number;
+  };
+}
+
 interface AIPredictionWithRealTimeProps {
   symbol: string;
 }
 
 const AIPredictionWithRealTime: React.FC<AIPredictionWithRealTimeProps> = ({ symbol }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [predictionResult, setPredictionResult] = useState<any>(null);
+  const [predictionResult, setPredictionResult] = useState<PredictionResult | null>(null);
   const [currentTime, setCurrentTime] = useState<string>('');
   
   // Update time on client-side only

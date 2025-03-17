@@ -5,161 +5,213 @@ import { useState, useEffect } from 'react';
 interface NewsItem {
   id: number;
   title: string;
+  summary: string;
   source: string;
   date: string;
   url?: string;
-  category?: string;
+  category: 'market' | 'stocks' | 'economy' | 'crypto' | 'general';
+  sentiment: 'positive' | 'negative' | 'neutral';
+  relatedSymbols?: string[];
 }
 
 interface FinancialNewsProps {
-  initialNewsItems?: NewsItem[];
   maxItems?: number;
+  defaultCategory?: string;
 }
 
-const FinancialNews: React.FC<FinancialNewsProps> = ({ 
-  initialNewsItems = [], 
-  maxItems = 8 
-}) => {
-  const [newsItems, setNewsItems] = useState<NewsItem[]>(initialNewsItems);
-  const [activeCategory, setActiveCategory] = useState<string>('all');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
+const FinancialNews: React.FC<FinancialNewsProps> = ({ maxItems = 5, defaultCategory = 'all' }) => {
+  const [newsItems, setNewsItems] = useState<NewsItem[]>([]);
+  const [filteredNews, setFilteredNews] = useState<NewsItem[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>(defaultCategory);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Categories for filtering
-  const categories = [
-    { id: 'all', name: 'All' },
-    { id: 'markets', name: 'Markets' },
-    { id: 'stocks', name: 'Stocks' },
-    { id: 'economy', name: 'Economy' },
+  // Mock news data
+  const mockNewsData: NewsItem[] = [
+    {
+      id: 1,
+      title: 'Fed signals potential rate cuts in upcoming meeting',
+      summary: 'Federal Reserve officials have indicated they may consider cutting interest rates in their next policy meeting as inflation shows signs of cooling.',
+      source: 'Financial Times',
+      date: '2 hours ago',
+      category: 'economy',
+      sentiment: 'positive',
+      relatedSymbols: ['SPY', 'QQQ', 'DIA']
+    },
+    {
+      id: 2,
+      title: 'Tech stocks rally as inflation concerns ease',
+      summary: 'Major technology stocks saw significant gains as recent economic data suggests inflation pressures may be subsiding, potentially leading to a more favorable interest rate environment.',
+      source: 'Wall Street Journal',
+      date: '4 hours ago',
+      category: 'stocks',
+      sentiment: 'positive',
+      relatedSymbols: ['AAPL', 'MSFT', 'GOOGL', 'AMZN']
+    },
+    {
+      id: 3,
+      title: 'Retail sales exceed expectations in Q3',
+      summary: 'Consumer spending showed resilience in the third quarter, with retail sales figures surpassing analyst expectations despite ongoing economic uncertainties.',
+      source: 'Bloomberg',
+      date: '6 hours ago',
+      category: 'economy',
+      sentiment: 'positive',
+      relatedSymbols: ['WMT', 'TGT', 'AMZN']
+    },
+    {
+      id: 4,
+      title: 'Oil prices drop amid global demand concerns',
+      summary: 'Crude oil prices fell sharply as investors worry about weakening demand in major economies and potential oversupply issues.',
+      source: 'Reuters',
+      date: '8 hours ago',
+      category: 'market',
+      sentiment: 'negative',
+      relatedSymbols: ['XOM', 'CVX', 'USO']
+    },
+    {
+      id: 5,
+      title: 'Bitcoin surpasses $60,000 mark after ETF approval',
+      summary: 'The world\'s largest cryptocurrency reached new heights following regulatory approval for several Bitcoin exchange-traded funds, signaling growing mainstream acceptance.',
+      source: 'CoinDesk',
+      date: '12 hours ago',
+      category: 'crypto',
+      sentiment: 'positive',
+      relatedSymbols: ['COIN', 'MSTR']
+    },
+    {
+      id: 6,
+      title: 'Manufacturing activity contracts for third consecutive month',
+      summary: 'The manufacturing sector continues to show signs of weakness as the latest PMI data indicates contraction, raising concerns about industrial output.',
+      source: 'CNBC',
+      date: '1 day ago',
+      category: 'economy',
+      sentiment: 'negative',
+      relatedSymbols: ['CAT', 'DE', 'MMM']
+    },
+    {
+      id: 7,
+      title: 'Apple unveils new AI features for upcoming devices',
+      summary: 'The tech giant announced significant artificial intelligence capabilities that will be integrated into its next generation of products, potentially reshaping user experience.',
+      source: 'TechCrunch',
+      date: '1 day ago',
+      category: 'stocks',
+      sentiment: 'positive',
+      relatedSymbols: ['AAPL']
+    }
   ];
 
-  // Mock function to fetch news data
-  // In a real implementation, this would call an API
-  const fetchNewsData = async (category: string = 'all', page: number = 1) => {
-    setIsLoading(true);
-    
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Mock news data
-    const mockNews: NewsItem[] = [
-      { id: 1, title: 'Fed signals potential rate cuts in upcoming meeting', source: 'Financial Times', date: '2h ago', category: 'economy', url: '#' },
-      { id: 2, title: 'Tech stocks rally as inflation concerns ease', source: 'Wall Street Journal', date: '4h ago', category: 'stocks', url: '#' },
-      { id: 3, title: 'Retail sales exceed expectations in Q3', source: 'Bloomberg', date: '6h ago', category: 'economy', url: '#' },
-      { id: 4, title: 'NVIDIA shares surge on AI chip demand', source: 'CNBC', date: '8h ago', category: 'stocks', url: '#' },
-      { id: 5, title: 'Global markets respond to central bank policies', source: 'Reuters', date: '10h ago', category: 'markets', url: '#' },
-      { id: 6, title: 'Oil prices stabilize after OPEC meeting', source: 'Bloomberg', date: '12h ago', category: 'markets', url: '#' },
-      { id: 7, title: 'Amazon announces new logistics investments', source: 'Business Insider', date: '1d ago', category: 'stocks', url: '#' },
-      { id: 8, title: 'Housing market shows signs of cooling', source: 'Financial Times', date: '1d ago', category: 'economy', url: '#' },
-      { id: 9, title: 'European markets close higher on positive economic data', source: 'Reuters', date: '1d ago', category: 'markets', url: '#' },
-      { id: 10, title: 'Tesla production numbers beat analyst expectations', source: 'CNBC', date: '1d ago', category: 'stocks', url: '#' },
-      { id: 11, title: 'Gold prices reach six-month high amid uncertainty', source: 'Bloomberg', date: '2d ago', category: 'markets', url: '#' },
-      { id: 12, title: 'Consumer confidence index rises for third straight month', source: 'Financial Times', date: '2d ago', category: 'economy', url: '#' },
-    ];
-    
-    // Filter by category if needed
-    const filteredNews = category === 'all' 
-      ? mockNews 
-      : mockNews.filter(item => item.category === category);
-    
-    // Paginate results
-    const startIndex = (page - 1) * maxItems;
-    const paginatedNews = filteredNews.slice(startIndex, startIndex + maxItems);
-    
-    setNewsItems(paginatedNews);
-    setIsLoading(false);
-  };
-
-  // Fetch news when category or page changes
+  // Simulate fetching news data
   useEffect(() => {
-    fetchNewsData(activeCategory, currentPage);
-  }, [activeCategory, currentPage, maxItems]);
+    const fetchNews = async () => {
+      setIsLoading(true);
+      // Simulate API call delay
+      setTimeout(() => {
+        setNewsItems(mockNewsData);
+        setIsLoading(false);
+      }, 1000);
+    };
 
-  // Handle category change
-  const handleCategoryChange = (category: string) => {
-    setActiveCategory(category);
-    setCurrentPage(1); // Reset to first page when changing category
-  };
+    fetchNews();
+  }, []);
 
-  // Handle pagination
-  const handleNextPage = () => {
-    setCurrentPage(prev => prev + 1);
-  };
+  // Filter news based on selected category
+  useEffect(() => {
+    if (selectedCategory === 'all') {
+      setFilteredNews(newsItems.slice(0, maxItems));
+    } else {
+      const filtered = newsItems.filter(item => item.category === selectedCategory);
+      setFilteredNews(filtered.slice(0, maxItems));
+    }
+  }, [selectedCategory, newsItems, maxItems]);
 
-  const handlePrevPage = () => {
-    setCurrentPage(prev => Math.max(1, prev - 1));
+  // Get sentiment badge color
+  const getSentimentColor = (sentiment: string) => {
+    switch (sentiment) {
+      case 'positive':
+        return 'bg-green-900/70 text-green-200 border-green-700';
+      case 'negative':
+        return 'bg-red-900/70 text-red-200 border-red-700';
+      default:
+        return 'bg-blue-900/70 text-blue-200 border-blue-700';
+    }
   };
 
   return (
-    <div className="bg-black border border-blue-800/50 rounded-lg shadow-lg overflow-hidden">
-      <div className="p-1 border-b border-blue-800/50 bg-gradient-to-r from-blue-900/30 to-black flex justify-between items-center">
-        <h2 className="text-sm font-bold text-white ml-2">Financial News</h2>
-        <div className="flex space-x-1">
-          {categories.map(category => (
+    <div className="bg-black backdrop-blur-sm rounded-xl shadow-2xl overflow-hidden border border-blue-800/30">
+      <div className="px-4 py-5 sm:p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold text-white">Financial News</h2>
+          <div className="flex space-x-2">
             <button
-              key={category.id}
-              onClick={() => handleCategoryChange(category.id)}
-              className={`px-1.5 py-0.5 text-xs rounded-md transition-colors ${activeCategory === category.id 
-                ? 'bg-blue-600 text-white' 
-                : 'bg-blue-900/30 text-blue-200 hover:bg-blue-800/40'}`}
+              onClick={() => setSelectedCategory('all')}
+              className={`px-2 py-1 text-xs rounded-md ${selectedCategory === 'all' ? 'bg-blue-600 text-white' : 'bg-blue-900/30 text-blue-300 hover:bg-blue-800/40'}`}
             >
-              {category.name}
+              All
             </button>
-          ))}
-        </div>
-      </div>
-      
-      <div className="divide-y divide-blue-800/30 max-h-[320px] overflow-y-auto">
-        {isLoading ? (
-          <div className="p-2 text-center">
-            <div className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-blue-500 border-r-transparent">
-              <span className="sr-only">Loading...</span>
-            </div>
+            <button
+              onClick={() => setSelectedCategory('market')}
+              className={`px-2 py-1 text-xs rounded-md ${selectedCategory === 'market' ? 'bg-blue-600 text-white' : 'bg-blue-900/30 text-blue-300 hover:bg-blue-800/40'}`}
+            >
+              Market
+            </button>
+            <button
+              onClick={() => setSelectedCategory('stocks')}
+              className={`px-2 py-1 text-xs rounded-md ${selectedCategory === 'stocks' ? 'bg-blue-600 text-white' : 'bg-blue-900/30 text-blue-300 hover:bg-blue-800/40'}`}
+            >
+              Stocks
+            </button>
+            <button
+              onClick={() => setSelectedCategory('economy')}
+              className={`px-2 py-1 text-xs rounded-md ${selectedCategory === 'economy' ? 'bg-blue-600 text-white' : 'bg-blue-900/30 text-blue-300 hover:bg-blue-800/40'}`}
+            >
+              Economy
+            </button>
           </div>
-        ) : newsItems.length > 0 ? (
-          newsItems.map(item => (
-            <div key={item.id} className="py-1 px-2 hover:bg-blue-900/10 transition-colors">
-              <a href={item.url || '#'} className="block">
-                <h3 className="text-xs text-blue-300 font-medium hover:text-blue-200 transition-colors">
-                  {item.title}
-                </h3>
-                <div className="flex justify-between items-center text-[10px]">
-                  <span className="text-gray-400">{item.source}</span>
-                  <span className="text-gray-500">{item.date}</span>
-                </div>
-              </a>
-            </div>
-          ))
+        </div>
+
+        {isLoading ? (
+          <div className="space-y-3">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="animate-pulse">
+                <div className="h-4 bg-blue-900/40 rounded w-3/4 mb-2"></div>
+                <div className="h-3 bg-blue-900/40 rounded w-1/2"></div>
+              </div>
+            ))}
+          </div>
         ) : (
-          <div className="p-2 text-center text-gray-500 text-xs">
-            No news available for this category.
+          <div className="space-y-4">
+            {filteredNews.length > 0 ? (
+              filteredNews.map((item) => (
+                <div key={item.id} className="border-b border-blue-800/30 pb-3 last:border-0 last:pb-0">
+                  <div className="flex justify-between items-start">
+                    <h3 className="text-sm font-medium text-white">{item.title}</h3>
+                    <span className={`ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full border ${getSentimentColor(item.sentiment)}`}>
+                      {item.sentiment.charAt(0).toUpperCase() + item.sentiment.slice(1)}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-blue-300 line-clamp-2">{item.summary}</p>
+                  <div className="mt-2 flex justify-between items-center text-xs text-blue-400">
+                    <span>{item.source}</span>
+                    <span>{item.date}</span>
+                  </div>
+                  {item.relatedSymbols && item.relatedSymbols.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {item.relatedSymbols.map((symbol) => (
+                        <span key={symbol} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-900/30 text-blue-300">
+                          {symbol}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-4">
+                <p className="text-sm text-blue-300">No news available for this category</p>
+              </div>
+            )}
           </div>
         )}
       </div>
-      
-      {newsItems.length > 0 && (
-        <div className="p-1 border-t border-blue-800/30 bg-blue-900/10 flex justify-between items-center">
-          <button 
-            onClick={handlePrevPage}
-            disabled={currentPage === 1 || isLoading}
-            className={`px-1.5 py-0.5 text-[10px] rounded-md ${currentPage === 1 || isLoading 
-              ? 'bg-blue-900/20 text-gray-500 cursor-not-allowed' 
-              : 'bg-blue-900/30 text-blue-200 hover:bg-blue-800/40'}`}
-          >
-            Prev
-          </button>
-          <span className="text-[10px] text-gray-400">Page {currentPage}</span>
-          <button 
-            onClick={handleNextPage}
-            disabled={newsItems.length < maxItems || isLoading}
-            className={`px-1.5 py-0.5 text-[10px] rounded-md ${newsItems.length < maxItems || isLoading 
-              ? 'bg-blue-900/20 text-gray-500 cursor-not-allowed' 
-              : 'bg-blue-900/30 text-blue-200 hover:bg-blue-800/40'}`}
-          >
-            Next
-          </button>
-        </div>
-      )}
     </div>
   );
 };
