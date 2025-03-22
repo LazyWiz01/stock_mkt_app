@@ -84,7 +84,13 @@ class MockDataService {
   private marketData: MarketData = { ...initialMarketData };
   private connectionState: ConnectionState = 'disconnected';
   private updateIntervals: { [symbol: string]: NodeJS.Timeout } = {};
-  private listeners: { [key: string]: Array<(data: any) => void> } = {
+  // Define event data types
+  private listeners: { 
+    stockUpdate: Array<(data: { symbol: string; data: StockData }) => void>;
+    indexUpdate: Array<(data: { symbol: string; data: StockData }) => void>;
+    connectionState: Array<(data: ConnectionState) => void>;
+    [key: string]: Array<(data: unknown) => void>;
+  } = {
     stockUpdate: [],
     indexUpdate: [],
     connectionState: []
@@ -152,7 +158,7 @@ class MockDataService {
   }
   
   // Add event listener - simplified implementation
-  public addEventListener(event: string, listener: (data: any) => void): void {
+  public addEventListener(event: string, listener: (data: unknown) => void): void {
     if (!this.listeners[event]) {
       this.listeners[event] = [];
     }
@@ -161,7 +167,7 @@ class MockDataService {
   }
   
   // Remove event listener - simplified implementation
-  public removeEventListener(event: string, listener: (data: any) => void): void {
+  public removeEventListener(event: string, listener: (data: unknown) => void): void {
     if (!this.listeners[event]) return;
     
     this.listeners[event] = this.listeners[event].filter(l => l !== listener);
@@ -211,7 +217,7 @@ class MockDataService {
   }
   
   // Notify all listeners of an event - simplified implementation
-  private notifyListeners(event: string, data: any): void {
+  private notifyListeners(event: string, data: unknown): void {
     if (!this.listeners[event]) return;
     
     this.listeners[event].forEach(listener => {

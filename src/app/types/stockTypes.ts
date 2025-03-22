@@ -11,7 +11,7 @@ export interface StockData {
 }
 
 export interface MarketData {
-  indices: { [symbol: string]: any };
+  indices: { [symbol: string]: StockData };
   stocks: { [symbol: string]: StockData };
 }
 
