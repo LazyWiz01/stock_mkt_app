@@ -25,9 +25,23 @@ ChartJS.register(
   Legend
 );
 
+interface PredictionResult {
+  currentPrice: number;
+  oneMinuteProjection: {
+    price: number;
+    change: number;
+    changePercent: number;
+  };
+  fiveMinuteProjection: {
+    price: number;
+    change: number;
+    changePercent: number;
+  };
+}
+
 interface RealTimeStockDataProps {
   symbol: string;
-  predictionResult?: any;
+  predictionResult?: PredictionResult;
 }
 
 const RealTimeStockData: React.FC<RealTimeStockDataProps> = ({ symbol, predictionResult }) => {
