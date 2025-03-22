@@ -110,7 +110,7 @@ const AIPredictionWithRealTime: React.FC<AIPredictionWithRealTimeProps> = ({ sym
       {/* Real-time stock data chart */}
       <div className="mt-4">
         <h3 className="text-sm font-medium text-white mb-2">Price Prediction Chart</h3>
-        <RealTimeStockData symbol={symbol} predictionResult={predictionResult} />
+        <RealTimeStockData symbol={symbol} predictionResult={predictionResult || undefined} />
       </div>
       
       <div className="mt-2 text-[10px] text-gray-400">
