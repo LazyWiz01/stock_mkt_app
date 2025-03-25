@@ -11,7 +11,8 @@ import {
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  ChartDataset
 } from 'chart.js';
 
 // Register ChartJS components
@@ -127,7 +128,7 @@ const RealTimeStockData: React.FC<RealTimeStockDataProps> = ({ symbol, predictio
         pointRadius: 3,
         tension: 0.1
       }
-    ].filter(Boolean)
+    ].filter(Boolean) as ChartDataset<'line', number[]>[]
   };
   
   // Chart options

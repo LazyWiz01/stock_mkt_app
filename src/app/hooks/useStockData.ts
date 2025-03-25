@@ -72,6 +72,28 @@ export function useStockData(options: UseStockDataOptions = {}): UseStockDataRes
     };
   }, [isInitialized, apiKey, autoConnect]);
   
+  // Subscribe to symbols
+  useEffect(() => {
+    if (isInitialized && symbols.length > 0 && connectionState === 'connected') {
+      // Fetch initial data
+      fetchInitialData(symbols);
+      
+      // Subscribe to real-time updates
+      symbols.forEach(symbol => {
+        subscribeToSymbol(symbol);
+      });
+    }
+    
+    return () => {
+      // Unsubscribe when symbols change or component unmounts
+      if (isInitialized && symbols.length > 0) {
+        symbols.forEach(symbol => {
+          unsubscribeFromSymbol(symbol);
+        });
+      }
+    };
+  }, [isInitialized, symbols, connectionState]);
+  
   // Setup periodic updates for subscribed symbols
   const setupSymbolUpdates = useCallback((symbol: string) => {
     // Clear existing interval if any
@@ -117,7 +139,7 @@ export function useStockData(options: UseStockDataOptions = {}): UseStockDataRes
   }, []);
   
   // Fetch initial data for symbols
-  const fetchInitialData = useCallback(async (symbolsToFetch: string[]) => {
+  const fetchInitialData = async (symbolsToFetch: string[]) => {
     if (!isInitialized || symbolsToFetch.length === 0) return;
     
     setIsLoading(true);
@@ -146,31 +168,7 @@ export function useStockData(options: UseStockDataOptions = {}): UseStockDataRes
     } finally {
       setIsLoading(false);
     }
-  }, [isInitialized, setupSymbolUpdates]);
-
-  // Subscribe to symbols
-  useEffect(() => {
-    if (isInitialized && symbols.length > 0 && connectionState === 'connected') {
-      // Fetch initial data
-      fetchInitialData(symbols);
-      
-      // Subscribe to real-time updates
-      symbols.forEach(symbol => {
-        mockMarketApi.subscribeToSymbol(symbol);
-      });
-    }
-    
-    return () => {
-      // Unsubscribe when symbols change or component unmounts
-      if (isInitialized && symbols.length > 0) {
-        symbols.forEach(symbol => {
-          mockMarketApi.unsubscribeFromSymbol(symbol);
-        });
-      }
-    };
-  }, [isInitialized, symbols, connectionState, fetchInitialData]);
-  
-  // This comment is no longer needed as we've reorganized the code
+  };
   
   // Connect to WebSocket
   const connect = useCallback(() => {
@@ -192,7 +190,7 @@ export function useStockData(options: UseStockDataOptions = {}): UseStockDataRes
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to connect to WebSocket'));
     }
-  }, [isInitialized, fetchInitialData]);
+  }, [isInitialized]);
   
   // Disconnect from WebSocket
   const disconnect = useCallback(() => {

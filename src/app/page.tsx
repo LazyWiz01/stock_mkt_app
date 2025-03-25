@@ -65,7 +65,7 @@ export default function Home() {
     scales: {
       y: {
         ticks: {
-          callback: function(value) {
+          callback: function(value: number) {
             return value.toLocaleString();
           },
           color: '#94a3b8'
@@ -315,44 +315,7 @@ export default function Home() {
     scales: {
       y: {
         ticks: {
-          callback: function(value) {
-            return value.toLocaleString();
-          },
-          color: '#94a3b8'
-        },
-        grid: { color: 'rgba(30, 64, 175, 0.1)' }
-      },
-      x: {
-        ticks: { color: '#94a3b8' },
-        grid: { color: 'rgba(30, 64, 175, 0.1)' }
-      }
-    },
-    elements: {
-      line: {
-        tension: 0.4
-      }
-    }
-  };
-  
-
-  
-  // Chart options for dashboard charts
-  const dashboardChartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false,
-      },
-      tooltip: {
-        mode: 'index',
-        intersect: false,
-      },
-    },
-    scales: {
-      y: {
-        ticks: {
-          callback: function(value) {
+          callback: function(value: number) {
             return value.toLocaleString();
           },
           color: '#94a3b8'
@@ -592,7 +555,7 @@ export default function Home() {
                             scales: {
                               y: {
                                 ticks: {
-                                  callback: function(value) {
+                                  callback: function(value: number) {
                                     return value.toLocaleString();
                                   },
                                   color: '#94a3b8'
@@ -638,7 +601,7 @@ export default function Home() {
                             scales: {
                               y: {
                                 ticks: {
-                                  callback: function(value) {
+                                  callback: function(value: number) {
                                     return value.toLocaleString();
                                   },
                                   color: '#94a3b8'
@@ -684,7 +647,7 @@ export default function Home() {
                             scales: {
                               y: {
                                 ticks: {
-                                  callback: function(value) {
+                                  callback: function(value: number) {
                                     return value.toLocaleString();
                                   },
                                   color: '#94a3b8'
@@ -1017,7 +980,7 @@ export default function Home() {
                       <div className="h-64 bg-blue-900/10 rounded-lg border border-blue-800/20 p-4">
                         {createPredictionChartData() && (
                           <Line 
-                            data={createPredictionChartData()} 
+                            data={createPredictionChartData() || { labels: [], datasets: [] }}
                             options={predictionChartOptions} 
                           />
                         )}
