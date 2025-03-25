@@ -3,10 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+<<<<<<< HEAD
     "dev": "cd stock_market_prediction && next dev",
     "build": "cd stock_market_prediction && next build",
     "start": "cd stock_market_prediction && next start",
     "lint": "cd stock_market_prediction && next lint"
+=======
+    "dev": "cd stock_market_prediction/stock_market_prediction && next dev",
+    "build": "cd stock_market_prediction/stock_market_prediction && next build",
+    "start": "cd stock_market_prediction/stock_market_prediction && next start",
+    "lint": "cd stock_market_prediction/stock_market_prediction && next lint"
+>>>>>>> 6e36023d7fd8c1e7801bbef226f6cb9a7a3545fd
   },
   "dependencies": {
     "chart.js": "^4.4.8",
