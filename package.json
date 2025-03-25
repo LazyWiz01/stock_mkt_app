@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "dev": "cd stock_market_prediction/stock_market_prediction && next dev",
+    "build": "cd stock_market_prediction/stock_market_prediction && next build",
+    "start": "cd stock_market_prediction/stock_market_prediction && next start",
+    "lint": "cd stock_market_prediction/stock_market_prediction && next lint"
   },
   "dependencies": {
     "chart.js": "^4.4.8",
