@@ -1,7 +1,4 @@
 {
-<<<<<<< HEAD
-  "framework": "nextjs"
-=======
   "buildCommand": "npm install && npm run build",
   "outputDirectory": "stock_market_prediction/stock_market_prediction/.next",
   "devCommand": "npm run dev",
@@ -13,5 +10,4 @@
   "rewrites": [
     { "source": "/(.*)", "destination": "/" }
   ]
->>>>>>> 6e36023d7fd8c1e7801bbef226f6cb9a7a3545fd
 }
