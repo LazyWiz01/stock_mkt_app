@@ -1,0 +1,10 @@
+{
+  "buildCommand": "cd stock_market_prediction && npm install && npm run build",
+  "outputDirectory": "stock_market_prediction/.next",
+  "devCommand": "cd stock_market_prediction && npm run dev",
+  "installCommand": "cd stock_market_prediction && npm install",
+  "framework": "nextjs",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
